@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Basic.Generic.Interface.Pager
 {
-    public interface IFilterable
+    public interface IFiltering
     {
         // Cherche selon une clé
         string SearchKey { get; set; }

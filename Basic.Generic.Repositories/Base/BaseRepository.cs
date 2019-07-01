@@ -34,6 +34,12 @@ namespace Basic.Generic.Repositories
             return Context.Set<TEntity>().Where(predicate);
         }
 
+        internal protected virtual TEntity Put(TEntity entity)
+        {
+            Context.Entry(entity).State = EntityState.Modified;
+            return entity;
+        }
+
         public virtual void Add(TEntity entity)
         {
             Context.Set<TEntity>().Add(entity);

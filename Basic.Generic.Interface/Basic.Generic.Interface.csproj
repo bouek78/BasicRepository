@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -43,9 +45,12 @@
   <ItemGroup>
     <Compile Include="CRUD\ICrud.cs" />
     <Compile Include="Pager\IFiltering.cs" />
+    <Compile Include="Pager\IOrderable.cs" />
     <Compile Include="Pager\IPagerList.cs" />
     <Compile Include="Pager\IPagerQuery.cs" />
     <Compile Include="Pager\IPaging.cs" />
+    <Compile Include="Pager\IFilterable.cs" />
+    <Compile Include="Pager\ISelectable.cs" />
     <Compile Include="Pager\ISortable.cs" />
     <Compile Include="Pager\ISorting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -21,6 +21,8 @@ namespace Basic.Generic.Interface.Pager
 
         bool HasSortingCondition { get; }
 
+        IEnumerable<SortDescription> SortDescription { get; set; }
+
         /// <summary>
         /// Est ce le tri par défaut
         /// </summary>

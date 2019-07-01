@@ -1,253 +1,200 @@
 ﻿using Basic.Generic.Common.Pager;
+using Basic.Generic.Enum.Pager;
 using Basic.Generic.Interface.CRUD;
 using Basic.Generic.Interface.Pager;
 using Basic.Generic.Models;
+using Basic.Generic.Repositories.Helpers;
+using Mapster;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Basic.Generic.Repositories.Base
 {
-        public interface IPagerRepository<TEntity>
-            where TEntity : EntityWithId, ISortable
-        {
-            Expression<Func<TEntity, bool>> GetSearchFilter(string searchKey);
-        }
-
-        /// <summary>
-        /// Classe pour le repository avec CRUD / Pagination / Vue
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TModel"></typeparam>
-        /// <typeparam name="TView"></typeparam>
-        /// <typeparam name="TViewModel"></typeparam>
-        /// <typeparam name="TContext"></typeparam>
-        public abstract class PagerBaseRepository<TEntity, TModel, TView, TViewModel, TContext> : PagerBaseRepository<TEntity, TModel, TContext>
-            where TEntity : EntityWithId, ISortable
-            where TModel : ModelWithId
-            where TContext : DbContext, new()
-            where TView : EntityWithId, ISortable
-            where TViewModel : ModelWithId
+    /// <summary>
+    /// Classe pour le repository avec CRUD / Pagination / Vue
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TView"></typeparam>
+    /// <typeparam name="TViewModel"></typeparam>
+    /// <typeparam name="TContext"></typeparam>
+    public abstract class PagerBaseRepository<TEntity, TModel, TView, TViewModel, TContext> : PagerBaseRepository<TEntity, TModel, TContext>
+        where TEntity : EntityWithId, ISortable, ISelectable, IFilterable, IOrderable
+        where TModel : ModelWithId
+        where TContext : DbContext, new()
+        where TView : EntityWithId, ISortable, ISelectable, IFilterable, IOrderable
+        where TViewModel : ModelWithId
     {
-            public new virtual Expression<Func<TView, bool>> GetSearchFilter(string searchKey)
-            {
-                return e => e.Name.Contains(searchKey);
-            }
-
-            protected virtual PagerList<TViewModel> GetPagerWithWhere(PagerQuery query, Expression<Func<TView, bool>> filter)
-            {
-                if (!string.IsNullOrEmpty(query.SearchKey))
-                    filter = filter.AndAlso(GetSearchFilter(query.SearchKey));
-
-                int resultCount = CountFindBySearchKey(filter);
-                query = AdjustPageNumber(query, resultCount);
-
-                IQueryable<TView> queryStart = QueryableFindBySearchKey(filter)
-                    .OrderBy(query.SortColumnName, query.SortDirection).AsQueryable();
-
-                IEnumerable<TView> datas = queryStart
-                    .Skip(() => query.SkipValue)
-                    .Take(() => query.ItemsPerPage);
-
-                List<TViewModel> dataList = datas.Select(data =>
-                {
-                    data.Adapt<TViewModel>();                    
-                }).ToList();
-
-                return new PagerList<TViewModel>
-                {
-                    TransientsList = dataList,
-                    PagerQuery = query
-                };
-            }
-        }
-
-        /// <summary>
-        /// Classe pour le repository avec CRUD / Pagination / Vue
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TModel"></typeparam>
-        /// <typeparam name="TView"></typeparam>
-        /// <typeparam name="TViewModel"></typeparam>
-        /// <typeparam name="TContext"></typeparam>
-        public abstract class PagerBaseRepository<TEntity, TModel, TViewModel, TContext> : PagerBaseRepository<TEntity, TModel, TContext>
-            where TEntity : EntityWithId, ISortable
-            where TModel : ModelWithId
-            where TContext : DbContext, new()
-            where TViewModel : ModelWithId
-    {
-            public new virtual Expression<Func<TEntity, bool>> GetSearchFilter(string searchKey)
-            {
-                return e => e.Name.Contains(searchKey);
-            }
-
-            public virtual Func<TEntity, TViewModel> Select()
-            {
-                return s => s.Adapt<TViewModel>();
-            }
-
-            protected new virtual PagerList<TViewModel> GetPagerWithWhere(PagerQuery query, Expression<Func<TEntity, bool>> filter, params Expression<Func<TEntity, object>>[] includes)
-            {
-                if (!string.IsNullOrEmpty(query.SearchKey))
-                    filter = filter.AndAlso(GetSearchFilter(query.SearchKey));
-
-                int resultCount = CountFindBySearchKey(filter);
-                query = AdjustPageNumber(query, resultCount);
-
-                IQueryable<TEntity> queryStart = QueryableFindBySearchKey(filter, includes);
-
-                if (!query.SortColumnName.Contains("&"))
-                    queryStart = queryStart.OrderBy(query.SortColumnName, query.SortDirection.ToString()).AsQueryable();
-                else
-                    queryStart = GetComplexOrder(queryStart, query);
-
-                IEnumerable<TEntity> datas = queryStart
-                    .Skip(() => query.SkipValue)
-                    .Take(() => query.ItemsPerPage);
-
-                List<TViewModel> dataList = datas.Select(Select()).ToList();
-
-                return new PagerList<TViewModel>
-                {
-                    TransientsList = dataList,
-                    PagerQuery = query
-                };
-            }
-        }
-
-        /// <summary>
-        /// Classe pour le repository avec CRUD / Pagination
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <typeparam name="TModel"></typeparam>
-        /// <typeparam name="TContext"></typeparam>
-        public abstract class PagerBaseRepository<TEntity, TModel, TContext> : BaseRepository<TEntity, TModel, TContext>, IPagerRepository<TEntity>, IBasicCrud<TModel>
-            where TEntity : EntityWithId, ISortable
-            where TModel : ModelWithId
-            where TContext : DbContext, new()
+        public new virtual PagerList<TViewModel> GetPager(PagerQuery query)
         {
-            public virtual PagerList<TModel> GetPager(PagerQuery query)
-            {
-                return GetPagerWithWhere(query, a => !a.Deleted);
-            }
-
-            public virtual Expression<Func<TView, bool>> GetSearchFilter<TView>(string searchKey)
-                where TView : EntityWithId, ISortable
-            {
-                // defaut, retourne Name
-                return e => e.Name.Contains(searchKey);
-            }
-
-            public virtual Expression<Func<TEntity, bool>> GetSearchFilter(string searchKey)
-            {
-                return GetSearchFilter<TEntity>(searchKey);
-            }
-
-            public virtual IQueryable<TEntity> GetComplexOrder(IQueryable<TEntity> source, PagerQuery query)
-            {
-                List<SortDescription> sort = new List<SortDescription>();
-                foreach (string name in query.SortColumnName.Split('&'))
-                {
-                    if (name.Contains('|'))
-                    {
-                        Enum.TryParse(name.Split('|')[1], out SortDirection dir);
-                        sort.Add(new SortDescription(name.Split('|')[0], dir));
-                    }
-                    else
-                    {
-                        sort.Add(new SortDescription(name, query.SortDirection));
-                    }
-                }
-
-                return source.BuildOrderBys(sort).AsQueryable();
-            }
-
-            protected virtual PagerList<TModel> GetPagerWithWhere(PagerQuery query, Expression<Func<TEntity, bool>> filter, params Expression<Func<TEntity, object>>[] includes)
-            {
-                if (!string.IsNullOrEmpty(query.SearchKey))
-                    filter = filter.AndAlso(GetSearchFilter(query.SearchKey));
-
-                int resultCount = CountFindBySearchKey(filter);
-                query = AdjustPageNumber(query, resultCount);
-
-                IQueryable<TEntity> queryStart = QueryableFindBySearchKey(filter, includes);
-
-                if (!query.SortColumnName.Contains("&"))
-                    queryStart = queryStart.OrderBy(query.SortColumnName, query.SortDirection.ToString()).AsQueryable();
-                else
-                    queryStart = GetComplexOrder(queryStart, query);
-
-                //IOrderedEnumerable<TEntity> orderedQuery = queryStart.OrderBy(query.SortColumnName, query.SortDirection);
-
-                IEnumerable<TEntity> datas = queryStart
-                    .Skip(query.SkipValue)
-                    .Take(query.ItemsPerPage);
-
-                List<TModel> dataList = datas.Select(data =>
-                {
-                    TModel model = Map(data);
-                    model.IsNew = false;
-                    return model;
-                }).ToList();
-
-                return new PagerListTransient<TModel>
-                {
-                    TransientsList = dataList,
-                    PagerQuery = query
-                };
-            }
-
-            protected int CountFindBySearchKey<TView>(Expression<Func<TView, bool>> where)
-                where TView : EntityWithId, ISortable
-            {
-                return QueryableFindBySearchKey(where).Count();
-            }
-
-            protected int CountFindBySearchKey(Expression<Func<TEntity, bool>> where)
-            {
-                return CountFindBySearchKey<TEntity>(where);
-            }
-
-            protected virtual IQueryable<TView> QueryableFindBySearchKey<TView>(Expression<Func<TView, bool>> where)
-                where TView : EntityWithId, ISortable
-            {
-                return Context.Set<TView>().AsNoTracking().Where(where);
-            }
-
-            protected virtual IQueryable<TEntity> QueryableFindBySearchKey(Expression<Func<TEntity, bool>> where)
-            {
-                return QueryableFindBySearchKey(where, null);
-            }
-
-            protected virtual IQueryable<TEntity> QueryableFindBySearchKey(Expression<Func<TEntity, bool>> where, params Expression<Func<TEntity, object>>[] includes)
-            {
-                var dbset = Context.Set<TEntity>().AsQueryable();
-
-                if (includes != null && includes.Any())
-                {
-                    foreach (var path in includes)
-                    {
-                        dbset.Include(path).Load();
-                    }
-                }
-                return dbset.Where(where);
-            }
-
-            protected PagerQuery AdjustPageNumber(PagerQuery query, int resultCount)
-            {
-                int firstItemIndexInPage = (query.CurrentIndex - 1) * query.ItemsPerPage + 1;
-                if (firstItemIndexInPage > resultCount && query.CurrentIndex > 1)
-                {
-                    query.CurrentIndex = (int)Math.Ceiling((decimal)resultCount / query.ItemsPerPage);
-                }
-                query.TotalItemsCount = resultCount;
-
-                return query;
-            }
+            return GetPagerWithWhere<TView, TViewModel>(query, a => !a.Deleted);
         }
-   
+    }
+
+    /// <summary>
+    /// Classe pour le repository avec CRUD / Pagination / Vue
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TView"></typeparam>
+    /// <typeparam name="TViewModel"></typeparam>
+    /// <typeparam name="TContext"></typeparam>
+    public abstract class PagerBaseRepository<TEntity, TModel, TViewModel, TContext> : PagerBaseRepository<TEntity, TModel, TContext>
+        where TEntity : EntityWithId, ISortable, ISelectable, IFilterable, IOrderable
+        where TModel : ModelWithId
+        where TContext : DbContext, new()
+        where TViewModel : ModelWithId
+    {
+        public new virtual PagerList<TViewModel> GetPager(PagerQuery query)
+        {
+            return GetPagerWithWhere<TEntity, TViewModel>(query, a => !a.Deleted);
+        }
+    }
+
+    /// <summary>
+    /// Classe pour le repository avec CRUD / Pagination
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TContext"></typeparam>
+    public abstract class PagerBaseRepository<TEntity, TModel, TContext> : BaseRepository<TEntity, TModel, TContext>, IBasicCrud<TModel>
+        where TEntity : EntityWithId, ISortable, ISelectable, IFilterable, IOrderable
+        where TModel : ModelWithId
+        where TContext : DbContext, new()
+    {
+        public virtual PagerList<TModel> GetPager(PagerQuery query)
+        {
+            return GetPagerWithWhere<TEntity, TModel>(query, a => !a.Deleted);
+        }
+
+        public virtual Expression<Func<TSource, bool>> GetSearchFilter<TSource>(string searchKey)
+            where TSource : IFilterable
+        {
+            if (!String.IsNullOrEmpty(searchKey))
+                return e => e.Name.Contains(searchKey);
+            else
+                return e => true;             
+        }
+
+        public virtual Expression<Func<TSource, TResult>> GetSelect<TSource, TResult>()
+            where TSource : ISelectable
+            where TResult : class
+        {
+            return s => s.Adapt<TResult>();
+        }
+
+        public virtual (Expression<Func<TSource, string>> keySelector, SortDirection sort) GetOrderBy<TSource>()
+            where TSource : ISortable
+        {
+            return (e => e.Name, SortDirection.Ascending);
+        }
+
+        public virtual IEnumerable<(Expression<Func<TSource, string>> keySelector, SortDirection sort)> GetThenBy<TSource>()
+        {
+            return null;
+        }
+
+        internal protected PagerList<TResult> GetPagerWithWhere<TSource, TResult>(IPagerQuery query, params Expression<Func<TSource, object>>[] includes)
+            where TSource : EntityWithId, ISortable, ISelectable, IFilterable, IOrderable
+            where TResult : ModelWithId
+        {
+            Expression<Func<TSource, bool>> filter = GetSearchFilter<TSource>(query.SearchKey);
+
+            /// COUNT
+            int resultCount = CountFindBySearchKey(filter);
+            query = AdjustPageNumber(query, resultCount);
+
+            /// WHERE
+            IQueryable<TSource> q = QueryableFindBySearchKey(filter, includes);
+
+            /// ORDER BY
+            IOrderedQueryable<TSource> orderedQuery = QueryableOrderBy(q, query);
+
+            /// TAKE / SKIP
+            IQueryable<TSource> orderedFilteredQuery = orderedQuery
+                                                        .Skip(query.SkipValue)
+                                                        .Take(query.ItemsPerPage);
+
+            /// SELECT
+            List<TResult> model = orderedFilteredQuery.Select(GetSelect<TSource, TResult>()).ToList();
+
+            return new PagerList<TResult>
+            {
+                List = model,
+                PagerQuery = query
+            };
+        }
+
+        internal protected IQueryable<TModel> QueryableSelect(IQueryable<TEntity> q, IPagerQuery query)
+        {
+            return q.Select(GetSelect<TEntity, TModel>());
+        }
+
+        internal protected IOrderedQueryable<TSource> QueryableOrderBy<TSource>(IQueryable<TSource> q, IPagerQuery query)
+            where TSource : ISortable
+        {
+            if (query.HasSortingCondition)
+            {
+                if (!String.IsNullOrEmpty(query.SortColumnName))
+                    return q.OrderBy(query.SortColumnName, query.SortDirection);
+                else
+                    return q.OrderBy(query.SortDescription);
+            }
+
+            (Expression<Func<TSource, string>> keySelector, SortDirection sort) = GetOrderBy<TSource>();
+            IOrderedQueryable<TSource> ord = q.OrderBy(keySelector, sort);
+            if (GetThenBy<TSource>() != null)
+            {
+                foreach((Expression<Func<TSource, string>> k, SortDirection s) in GetThenBy<TSource>())
+                {
+                    ord = ord.ThenBy(k, s);
+                }
+            }
+
+            return ord;
+        }
+
+        internal protected int CountFindBySearchKey<TSource>(Expression<Func<TSource, bool>> where)
+            where TSource : EntityWithId, ISelectable
+        {
+            return QueryableFindBySearchKey(where).Count();
+        }
+
+        internal protected virtual IQueryable<TSource> QueryableFindBySearchKey<TSource>(Expression<Func<TSource, bool>> where)
+            where TSource : EntityWithId, ISelectable
+        {
+            return QueryableFindBySearchKey(where, null);
+        }
+
+        internal protected virtual IQueryable<TSource> QueryableFindBySearchKey<TSource>(Expression<Func<TSource, bool>> where, params Expression<Func<TSource, object>>[] includes)
+            where TSource : EntityWithId, ISelectable
+        {
+            var dbset = Context.Set<TSource>().AsQueryable();
+
+            if (includes != null && includes.Any())
+            {
+                foreach (var path in includes)
+                {
+                    dbset.Include(path).Load();
+                }
+            }
+            return dbset.AsNoTracking().Where(where);
+        }
+
+        internal protected IPagerQuery AdjustPageNumber(IPagerQuery query, int resultCount)
+        {
+            int firstItemIndexInPage = (query.CurrentIndex - 1) * query.ItemsPerPage + 1;
+            if (firstItemIndexInPage > resultCount && query.CurrentIndex > 1)
+            {
+                query.CurrentIndex = (int)Math.Ceiling((decimal)resultCount / query.ItemsPerPage);
+            }
+            query.TotalItemsCount = resultCount;
+
+            return query;
+        }
+    }
+
 }

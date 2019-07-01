@@ -1,4 +1,5 @@
-﻿using Basic.Generic.Models;
+﻿using Basic.Generic.Interface.Pager;
+using Basic.Generic.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,13 +31,13 @@ namespace Basic.Generic.Interface.CRUD
     public interface IBasicPager<TPoco> : IBasicCrud<TPoco>
         where TPoco : ModelWithId
     {
-        PagerList<TPoco> GetPager(PagerQuery query);
+        IPagerList<TPoco> GetPager(IPagerQuery query);
     }
 
     public interface IBasicPager<TPoco, TViewModel> : IBasicCrud<TPoco>
     where TPoco : ModelWithId
     where TViewModel : ModelWithId
     {
-        PagerList<TViewModel> GetPager(PagerQuery query);
+        IPagerList<TViewModel> GetPager(IPagerQuery query);
     }
 }

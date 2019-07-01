@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,9 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Basic.Generic.Common\Basic.Generic.Common.csproj" />
     <ProjectReference Include="..\Basic.Generic.Interface\Basic.Generic.Interface.csproj" />
     <ProjectReference Include="..\Basic.Generic.Models\Basic.Generic.Models.csproj" />
+    <ProjectReference Include="..\Basic.Generic.Pager\Basic.Generic.Pager.csproj" />
   </ItemGroup>
 
 </Project>
