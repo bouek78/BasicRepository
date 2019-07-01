@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Basic.Generic.Common\Basic.Generic.Common.csproj" />
+    <ProjectReference Include="..\Basic.Generic.Interface\Basic.Generic.Interface.csproj" />
     <ProjectReference Include="..\Basic.Generic.Models\Basic.Generic.Models.csproj" />
   </ItemGroup>
 

@@ -1,31 +1,23 @@
-﻿using Basic.Generic.Models;
+﻿using Basic.Generic.Interface.CRUD;
+using Basic.Generic.Models;
 using Mapster;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Principal;
+using System.Threading;
 
 namespace Basic.Generic.Repositories
 {
-    public interface IGenericRepository<TEntity, TModel> where TEntity : EntityWithId where TModel : ModelWithId
-    {
-        Guid Insert(TModel entity);
-        void Update(TModel entity);
-        void Delete(TModel data);
-        void Delete(Guid id);
-        IList<TModel> GetAll();
-        int Count();
-    }
-
-    public abstract class BaseRepository<TEntity, TModel, TContext> : IGenericRepository<TEntity, TModel>, IDisposable
+    public abstract class BaseRepository<TEntity, TModel, TContext> : IBasicCrud<TModel>
                                                                     where TEntity : EntityWithId
                                                                     where TModel : ModelWithId
                                                                     where TContext : DbContext, new()
     {
-        internal protected TypeAdapterConfig ToEntityConfig = new TypeAdapterConfig();
-        internal protected TypeAdapterConfig ToModelConfig = new TypeAdapterConfig();
+        protected IPrincipal CurrentUser => Thread.CurrentPrincipal;
+
         internal protected TContext Context { get; set; } = new TContext();
 
         internal protected IQueryable<TEntity> All => Context.Set<TEntity>().AsQueryable();
@@ -92,22 +84,24 @@ namespace Basic.Generic.Repositories
 
         public virtual TEntity Map(TModel model)
         {
-            return model.Adapt<TEntity>(ToEntityConfig);
+            return model.Adapt<TEntity>();
         }
 
         public virtual TModel Map(TEntity entity)
         {
-            return entity.Adapt<TModel>(ToModelConfig);
+            return entity.Adapt<TModel>();
         }
 
         public virtual IEnumerable<TEntity> Map(IEnumerable<TModel> model)
         {
-            return model.Adapt<IEnumerable<TEntity>>();
+            foreach (TModel m in model)
+                yield return Map(m);
         }
 
         public virtual IEnumerable<TModel> Map(IEnumerable<TEntity> entity)
         {
-            return entity.Adapt<IEnumerable<TModel>>();
+            foreach (TEntity e in entity)
+                yield return Map(e);
         }
 
         /// <summary>
@@ -132,65 +126,74 @@ namespace Basic.Generic.Repositories
             Save();
         }
 
-        public virtual void Delete(TModel data)
+        public void Put(TModel data)
         {
-            Delete(Map(data));
+            Put(Map(data));
             Save();
         }
 
-        public virtual void Delete(Guid key)
+        public virtual void Delete(TModel data, bool realDelete = false)
         {
-            TEntity entity = Find(key);
-            Delete(entity);
+            if (realDelete)
+            {
+                Delete(Map(data));
+            }
+            else
+            {
+                TEntity s = Find(data.Id);
+                s.Deleted = true;
+                Update(s);
+            }
             Save();
         }
 
-        public IList<TModel> GetAll()
+        public void DeleteById(Guid id, bool realDelete = false)
         {
-            return Map(All.ToList()).ToList();
+            TEntity s = Find(id);
+            if (realDelete)
+            {
+                Delete(s);
+            }
+            else
+            {
+                s.Deleted = true;
+                Update(s);
+            }
+            Save();
         }
-
+        
         public int Count()
         {
             return All.Count();
         }
 
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
+        public List<TModel> Get(bool includeDelete = false)
         {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects).
-                    Context.Dispose();
-                }
+            return Map(All.Where(x => x.Deleted == includeDelete)).ToList();
+        }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.
-                // TODO: set large fields to null.
-                Context = null;
-                disposedValue = true;
+        public TModel Get(Guid id)
+        {
+            try
+            {
+                return Map(Find(id));
+            }
+            catch 
+            {
+                return null;
             }
         }
 
-        // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-        // ~BaseRepository() {
-        //   // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        //   Dispose(false);
-        // }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
+        public IEnumerable<TModel> Get(IEnumerable<Guid> ids)
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            GC.SuppressFinalize(this);
+            try
+            {
+                return DbSet.Where(x => ids.Contains(x.Id)).ToList().Select(x => Map(x));
+            }
+            catch
+            {
+                return null;
+            }
         }
-
-
-        #endregion
     }
 }

@@ -15,5 +15,7 @@ namespace Basic.Generic.Repositories
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public DateTime ModifiedOn { get; set; } = DateTime.Now;
+
+        public bool Deleted { get; set; }
     }
 }

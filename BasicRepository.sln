@@ -7,11 +7,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic.Generic.Samples", "Ba
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic.Generic.Samples.Tests", "Basic.Generic.Samples.Tests\Basic.Generic.Samples.Tests.csproj", "{1DCC14C2-96F3-46FB-82BE-5885D3C303A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic.Generic.Services", "Basic.Generic.Services\Basic.Generic.Services.csproj", "{7ADD034A-6174-4C01-B2A3-B478FB01D64A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Basic.Generic.Services", "Basic.Generic.Services\Basic.Generic.Services.csproj", "{7ADD034A-6174-4C01-B2A3-B478FB01D64A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic.Generic.Repositories", "Basic.Generic.Repositories\Basic.Generic.Repositories.csproj", "{4EB24E73-8092-4990-96E8-E01A8EB1F6E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Basic.Generic.Repositories", "Basic.Generic.Repositories\Basic.Generic.Repositories.csproj", "{4EB24E73-8092-4990-96E8-E01A8EB1F6E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic.Generic.Models", "Basic.Generic.Models\Basic.Generic.Models.csproj", "{D615E88B-450E-47E8-8642-ACA31BF55FE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Basic.Generic.Models", "Basic.Generic.Models\Basic.Generic.Models.csproj", "{D615E88B-450E-47E8-8642-ACA31BF55FE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic.Generic.Common", "Basic.Generic.Common\Basic.Generic.Common.csproj", "{40316B9F-3953-48EE-853C-EBEE9F5C5BDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic.Generic.Interface", "Basic.Generic.Interface\Basic.Generic.Interface.csproj", "{2FA698D0-27D0-4D0C-91C1-990C00AADA34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Basic.Generic.Enum", "Basic.Generic.Enum\Basic.Generic.Enum.csproj", "{F50A5524-7419-4293-ABAD-EF81A81664C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +45,18 @@ Global
 		{D615E88B-450E-47E8-8642-ACA31BF55FE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D615E88B-450E-47E8-8642-ACA31BF55FE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D615E88B-450E-47E8-8642-ACA31BF55FE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40316B9F-3953-48EE-853C-EBEE9F5C5BDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40316B9F-3953-48EE-853C-EBEE9F5C5BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40316B9F-3953-48EE-853C-EBEE9F5C5BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40316B9F-3953-48EE-853C-EBEE9F5C5BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FA698D0-27D0-4D0C-91C1-990C00AADA34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FA698D0-27D0-4D0C-91C1-990C00AADA34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FA698D0-27D0-4D0C-91C1-990C00AADA34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FA698D0-27D0-4D0C-91C1-990C00AADA34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F50A5524-7419-4293-ABAD-EF81A81664C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F50A5524-7419-4293-ABAD-EF81A81664C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F50A5524-7419-4293-ABAD-EF81A81664C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F50A5524-7419-4293-ABAD-EF81A81664C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
